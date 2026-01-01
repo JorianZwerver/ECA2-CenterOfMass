@@ -24,20 +24,23 @@ thresholdIm = map . map . applyThres
 lightHouseBW :: FilePath
 lightHouseBW = "../images/lightHouseBW.pgm"
 
+imageBw :: [[Pixel]]
+imageBw = thresholdIm threshold image
+
 result_ex1 :: IO ()
-result_ex1 = wf lightHouseBW $ thresholdIm threshold image
+result_ex1 = wf lightHouseBW imageBw
 
 -----------------------------------------------------------------------------------------
 -- Assignment 2, Center of mass of rows and picture
 -----------------------------------------------------------------------------------------
 
 centerColor :: (Num a) => a
-centerColor = 10
+centerColor = 2
 
 comRows :: [[Int]] -> Int
 comRows im = rmx `div` mx
     where
-        sums = map (sum) im
+        sums = map sum im
         mx = sum sums
         inds = [1..length sums]
         rmx = sum $ zipWith (*) sums inds
@@ -59,7 +62,23 @@ result_ex2 = wf lightHouseBWcom $ imageWithCom centerColor $ thresholdIm thresho
 -----------------------------------------------------------------------------------------
 
 comParts :: [[Pixel]] -> [[Pixel]]
-comParts = undefined
+comParts im = unblocks2D (length im) $ imageWithCom 2 <$> blocks2D 8 im
+
+lightHouseComParts :: FilePath
+lightHouseComParts = "../images/lightHouseComParts.pgm"
+
+result_ex3_1 :: IO ()
+result_ex3_1 = wf lightHouseComParts $ comParts image
 
 comPartsWB :: [[Pixel]] -> [[Pixel]]
-comPartsWB = undefined
+comPartsWB im = unblocks2D ln' $ addBorders 2 $ blocks2D 8 $ comParts im
+    where
+        ln = length im
+        ln' = ln + ln `div` 4
+
+lightHouseComPartsWB :: FilePath
+lightHouseComPartsWB = "../images/lightHouseComPartsWB.pgm"
+
+result_ex3_2 :: IO ()
+result_ex3_2 = wf lightHouseComPartsWB $ comPartsWB image
+        
