@@ -18,7 +18,7 @@ wf path i = writeFile path (pre ++ printimage i)
     pre = "P2\r\n" ++ (show w) ++ " " ++ (show h) ++ "\r\n" ++ mx ++ "\r\n"
     w = length (i!!0) -- length of first row is image width
     h = length i
-    mx = show $ maximum $ maximum i
+    mx = show $ maximum $ maximum <$> i
 
 -- The blocks2D function takes a window width an image (list of lists of grayscale pixels) and chops
 --  it into different blocks. for exampe:

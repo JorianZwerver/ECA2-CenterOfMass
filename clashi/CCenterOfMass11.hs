@@ -6,7 +6,7 @@ import Common
 import ComAxisTb
 import Data.Maybe
 import qualified Data.List as L
--- import ImageData
+import ImageData
 -- import Debug.Trace
 
 -- Student information:
@@ -18,12 +18,75 @@ import qualified Data.List as L
 -- Assignment 4, Changing a pixel in a picture
 -----------------------------------------------------------------------------------------
 
-changePixelInImage = undefined
+changePixelInImage :: (KnownNat n, Enum a)
+  => Vec n (Vec n p)  -- list of list of values
+  -> a                -- row
+  -> a                -- collumn
+  -> p                -- new value
+  -> Vec n (Vec n p)  -- list of list of values with updated value
+changePixelInImage image y x p = replace y newRow image
+    where
+        newRow = replace x p $ image !! y
+
+thresholdIm :: (KnownNat n, Ord a, Num a) 
+  => a 
+  -> Vec n (Vec n a) 
+  -> Vec n (Vec n a)
+thresholdIm = map . map . applyThres
+    where
+        applyThres thres a | a > thres = 1
+                           | otherwise = 0
+
+comRows :: forall n a . (KnownNat n, Integral a)
+  => Vec n (Vec n a)
+  -> a
+comRows im = sumRmx `div` sumMx
+    where
+        mx      = sum <$> im
+        sumMx   = sum mx
+        sumRmx  = sum $ zipWith (*) mx r
+        r       = iterateI (+1) 1 :: Vec n a
+
+com :: (KnownNat n, Integral a)
+  => Vec n (Vec n a)
+  -> (a, a)
+com im = (comRows im - 1, comRows (transpose im) - 1)
+
+imageWithCom :: (KnownNat n, Integral a)
+  => a
+  -> Vec n (Vec n a)
+  -> Vec n (Vec n a)
+imageWithCom c im = uncurry (changePixelInImage im) (com im) c
 
 -----------------------------------------------------------------------------------------
 -- Assignment 5, Center of mass of parts of the image, with and without borders
 -----------------------------------------------------------------------------------------
 
+centerColor :: (Num a) => a
+centerColor = 2
+
+blockWidth :: SNat 8
+blockWidth = d8
+
+-- comParts :: forall n a m bw . (KnownNat n, KnownNat m, KnownNat bw, Integral a, (n) ~ (m * bw))
+--   => Vec n (Vec (m * bw) a)
+--   -> Vec n (Vec (m * bw) a)
+comParts im = unblocks2D d128 $ imageWithCom centerColor <$> blocks2D blockWidth im
+
+lightHouseComParts :: FilePath
+lightHouseComParts = "../images/lightHouseComParts_clash.pgm"
+
+result_ex5_1 :: IO ()
+result_ex5_1 = wf lightHouseComParts $ comParts image
+
+-- comPartsWB :: [[Pixel]] -> [[Pixel]]
+comPartsWB im = unblocks2D d160 $ addBorders 2 $ blocks2D d8 $ comParts im
+
+lightHouseComPartsWB :: FilePath
+lightHouseComPartsWB = "../images/lightHouseComPartsWB_clash.pgm"
+
+result_ex5_2 :: IO ()
+result_ex5_2 = wf lightHouseComPartsWB $ comPartsWB image
 
 -----------------------------------------------------------------------------------------
 -- Assignment 6, Axi streaming serial
