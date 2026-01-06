@@ -7,7 +7,7 @@ import Data.Maybe
 import Axi
 import qualified Data.List as L
 
-import CCenterOfMassXX -- Change this to your team nr.
+import CCenterOfMass11 -- Change this to your team nr.
 
 runLightHouse :: IO ()
 runLightHouse = do
